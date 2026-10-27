@@ -129,6 +129,11 @@ from bs4._warnings import (
     XMLParsedAsHTMLWarning,
 )
 
+# Kele Fong kelef - My additional module
+from bs4.soupreplacer import(
+    SoupReplacer
+)
+
 
 class BeautifulSoup(Tag):
     """A data structure representing a parsed HTML or XML document.
@@ -180,6 +185,7 @@ class BeautifulSoup(Tag):
     is_xml: bool
     known_xml: Optional[bool]
     parse_only: Optional[SoupStrainer]  #: :meta private:
+    replacer: Optional[SoupReplacer]  #: :meta private:
 
     # These members are only used while parsing markup.
     markup: Optional[_RawMarkup]  #: :meta private:
@@ -206,6 +212,8 @@ class BeautifulSoup(Tag):
     #: could not be represented in Unicode.
     contains_replacement_characters: bool
 
+    # Kele Fong kelef
+    # Note: added arg replacer to take SoupReplacer object (optional) ~ line 225
     def __init__(
         self,
         markup: _IncomingMarkup = "",
@@ -215,6 +223,7 @@ class BeautifulSoup(Tag):
         from_encoding: Optional[_Encoding] = None,
         exclude_encodings: Optional[_Encodings] = None,
         element_classes: Optional[Dict[Type[PageElement], Type[PageElement]]] = None,
+        replacer: Optional[SoupReplacer] = None,
         **kwargs: Any,
     ):
         """Constructor.
@@ -254,6 +263,9 @@ class BeautifulSoup(Tag):
          like to be instantiated instead as the parse tree is
          built. This is useful for subclassing Tag or NavigableString
          to modify default behavior.
+
+        :param replacer: A SoupReplacer: Replaces Tag matches with the
+         given replacement Tag.
 
         :param kwargs: For backwards compatibility purposes, the
          constructor accepts certain keyword arguments used in
@@ -435,6 +447,7 @@ class BeautifulSoup(Tag):
         self.known_xml = self.is_xml
         self._namespaces = dict()
         self.parse_only = parse_only
+        self.replacer = replacer
 
         if hasattr(markup, "read"):  # It's a file-type object.
             markup = markup.read()
@@ -1029,6 +1042,11 @@ class BeautifulSoup(Tag):
         # Assume that this is either Tag or a subclass of Tag. If not,
         # the user brought type-unsafety upon themselves.
         tag_class = cast(Type[Tag], tag_class)
+
+        # SoupReplacer implementation:
+        if (self.replacer is not None):
+            name = self.replacer.change_tag_name(name)
+
         tag = tag_class(
             self,
             self.builder,
@@ -1060,6 +1078,13 @@ class BeautifulSoup(Tag):
         """
         # print("End tag: " + name)
         self.endData()
+        
+        # SoupReplacer implementation: 
+        if (self.replacer is not None):
+            name = self.replacer.change_tag_name(name)
+
+        # if tag was changed, _popToTag will find its match
+
         self._popToTag(name, nsprefix)
 
     def handle_data(self, data: str) -> None:
