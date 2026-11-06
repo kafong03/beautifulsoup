@@ -1,29 +1,61 @@
+from __future__ import annotations
+
+from typing import (
+    Callable,
+    Optional,
+    TYPE_CHECKING,
+)
+
+from bs4.element import Tag
+
+if TYPE_CHECKING:
+    from bs4._typing import _RawOrProcessedAttributeValues
+
+
 class SoupReplacer():
     """
 
     A 'SoupReplacer' encapsulates the logic necessary to match and replace
     Tag objects during file parsing.
 
-    :param og_tag: the name of the Tag that will be replaced
+    :param og_tag: optional string name of the Tag that will be replaced
 
-    :param alt_tag: the name of the Tag that will replace og_tag in the document
+    :param alt_tag: optional string name of the Tag that will replace og_tag in the document
+
+    :param name_xformer: optional function that takes a Tag object and returns a replacement for its name
+
+    :param attrs_xformer: optional function that takes a Tag object and returns a replacement for its attributes
+
+    :param xformer: optional function that can transform a Tag object and does not return anything
     """
-    og_tag: str
-    alt_tag: str
+    og_tag: Optional[str]
+    alt_tag: Optional[str]
+    name_xformer: Optional[Callable[[Tag], str]]
+    attrs_xformer: Optional[Callable[[Tag], Optional[_RawOrProcessedAttributeValues]]] # not sure what this should return yet -> tag.attrs value?
+    xformer: Optional[Callable[[Tag], None]]
 
     def __init__(
         self,
-        og_tag: str,
-        alt_tag: str
+        og_tag: Optional[str] = None,
+        alt_tag: Optional[str] = None,
+        name_xformer: Optional[Callable[[Tag], str]] = None, 
+        attrs_xformer: Optional[Callable[[Tag], Optional[_RawOrProcessedAttributeValues]]] = None, 
+        xformer: Optional[Callable[[Tag], None]]= None
     ):
         self.og_tag = og_tag
         self.alt_tag = alt_tag
+        self.name_xformer = name_xformer
+        self.attrs_xformer = attrs_xformer
+        self.xformer = xformer
 
-    def change_tag_name(self, name: str) -> str:
-        # if the tag's name matches og_tag return alt_tag
-        if (name == self.og_tag):
-            return self.alt_tag
-        return name
+        if (og_tag is not None and alt_tag is not None):
+            self.name_xformer = lambda tag : self.alt_tag if tag.name == self.og_tag else tag.name
+        elif ((og_tag is None and alt_tag is not None) or (og_tag is not None and alt_tag is None)):
+            raise ValueError("Both og_tag and alt_tag must be given a value or have no value.") 
 
-    # think about what to do with a tag that has no end tag
-    # or vise versa? (maybe have a start tag and end tag function)
+        # check if og_tag and alt_tag not null
+        # case where both the og_tag, alt_tag, and name_xformer args are given
+            # throw error??
+        
+        # if not, make into name_xformer
+        # case if there is both a name_xformer and the string tags?

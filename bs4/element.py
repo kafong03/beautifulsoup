@@ -1735,6 +1735,9 @@ class Tag(PageElement):
                 self.interesting_string_types = {builder.string_containers[self.name]}
             else:
                 self.interesting_string_types = self.MAIN_CONTENT_STRING_TYPES
+        
+        # My addition - to keep track of the original name of the tag if it's changed by SoupReplacer
+        self.og_name = name
 
     parser_class: Optional[type[BeautifulSoup]]
     name: str

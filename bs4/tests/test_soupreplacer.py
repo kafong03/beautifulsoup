@@ -15,6 +15,7 @@ import warnings
 from . import (
     SoupTest,
 )
+from bs4.element import Tag
 from bs4.filter import SoupStrainer
 from bs4.soupreplacer import(
     SoupReplacer
@@ -37,7 +38,9 @@ class TestSoupReplacer(SoupTest):
         alt_tag = "blockquote"
         soup_replacer = SoupReplacer(og_tag, alt_tag)
 
-        assert soup_replacer.change_tag_name("b") == "blockquote"
+        test_tag = Tag(name="b")
+
+        assert soup_replacer.name_xformer(test_tag) == "blockquote"
 
 
     def test_change_tag_name_no_match(self):
@@ -46,7 +49,9 @@ class TestSoupReplacer(SoupTest):
         alt_tag = "blockquote"
         soup_replacer = SoupReplacer(og_tag, alt_tag)
 
-        assert soup_replacer.change_tag_name("p") == "p"
+        test_tag = Tag(name="p")
+
+        assert soup_replacer.name_xformer(test_tag) == "p"
 
 
     def test_beautifulsoup_tag_change(self):

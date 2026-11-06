@@ -805,8 +805,8 @@ class BeautifulSoup(Tag):
             # Nothing to pop. This shouldn't happen.
             return None
         tag = self.tagStack.pop()
-        if tag.name in self.open_tag_counter:
-            self.open_tag_counter[tag.name] -= 1
+        if tag.og_name in self.open_tag_counter:
+            self.open_tag_counter[tag.og_name] -= 1
         if (
             self.preserve_whitespace_tag_stack
             and tag == self.preserve_whitespace_tag_stack[-1]
@@ -829,11 +829,11 @@ class BeautifulSoup(Tag):
             self.currentTag.contents.append(tag)
         self.tagStack.append(tag)
         self.currentTag = self.tagStack[-1]
-        if tag.name != self.ROOT_TAG_NAME:
-            self.open_tag_counter[tag.name] += 1
-        if tag.name in self.builder.preserve_whitespace_tags:
+        if tag.og_name != self.ROOT_TAG_NAME:
+            self.open_tag_counter[tag.og_name] += 1
+        if tag.og_name in self.builder.preserve_whitespace_tags:
             self.preserve_whitespace_tag_stack.append(tag)
-        if tag.name in self.builder.string_containers:
+        if tag.og_name in self.builder.string_containers:
             self.string_container_stack.append(tag)
 
     def endData(self, containerClass: Optional[Type[NavigableString]] = None) -> None:
@@ -989,7 +989,7 @@ class BeautifulSoup(Tag):
             if not self.open_tag_counter.get(name):
                 break
             t = self.tagStack[i]
-            if name == t.name and nsprefix == t.prefix:
+            if name == t.og_name and nsprefix == t.prefix:
                 if inclusivePop:
                     most_recently_popped = self.popTag()
                 break
@@ -1043,10 +1043,6 @@ class BeautifulSoup(Tag):
         # the user brought type-unsafety upon themselves.
         tag_class = cast(Type[Tag], tag_class)
 
-        # SoupReplacer implementation:
-        if (self.replacer is not None):
-            name = self.replacer.change_tag_name(name)
-
         tag = tag_class(
             self,
             self.builder,
@@ -1062,6 +1058,16 @@ class BeautifulSoup(Tag):
         )
         if tag is None:
             return tag
+
+        # SoupReplacer Implementation Milestone 3
+        if (self.replacer is not None):
+            if (self.replacer.name_xformer is not None):
+                tag.name = self.replacer.name_xformer(tag)
+            if (self.replacer.attrs_xformer is not None):
+                tag.attrs = self.replacer.attrs_xformer(tag)
+            if (self.replacer.xformer is not None):
+                self.replacer.xformer(tag)
+
         if self._most_recent_element is not None:
             self._most_recent_element.next_element = tag
         self._most_recent_element = tag
@@ -1078,10 +1084,6 @@ class BeautifulSoup(Tag):
         """
         # print("End tag: " + name)
         self.endData()
-        
-        # SoupReplacer implementation: 
-        if (self.replacer is not None):
-            name = self.replacer.change_tag_name(name)
 
         # if tag was changed, _popToTag will find its match
 
