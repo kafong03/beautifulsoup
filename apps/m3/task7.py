@@ -33,7 +33,7 @@ def task7():
 
         soup = BeautifulSoup(file, parser, replacer=add_class_test_to_p_tags)
 
-        file_output_name = "../task7_output."
+        file_output_name = "./test_output/task7_output."
         file_output_name += "xml" if sys.argv[1][-3:].lower() == "xml" else "html"
         with open(file_output_name, 'w', encoding='utf-8') as f:                    
             f.write(soup.prettify())

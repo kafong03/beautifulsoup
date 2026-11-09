@@ -50,12 +50,7 @@ class SoupReplacer():
 
         if (og_tag is not None and alt_tag is not None):
             self.name_xformer = lambda tag : self.alt_tag if tag.name == self.og_tag else tag.name
+            if (name_xformer is not None):
+                raise ValueError("name_xformer cannot be given if og_tag and alt_tag have values")
         elif ((og_tag is None and alt_tag is not None) or (og_tag is not None and alt_tag is None)):
             raise ValueError("Both og_tag and alt_tag must be given a value or have no value.") 
-
-        # check if og_tag and alt_tag not null
-        # case where both the og_tag, alt_tag, and name_xformer args are given
-            # throw error??
-        
-        # if not, make into name_xformer
-        # case if there is both a name_xformer and the string tags?
