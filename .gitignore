@@ -126,3 +126,4 @@ dmypy.json
 # test data files
 apps/m2/test_data_files/
 apps/m3/test_output/
+apps/m4/test_output/
