@@ -544,6 +544,19 @@ class BeautifulSoup(Tag):
         self.reset()
         self._feed()
 
+    # Kele Fong - Milestone 4 Implementation:
+    def __iter__(self) -> Iterator[PageElement]:
+        "Iterating over a BeautifulSoup object iterates over all of its nodes (PageElement Objects)."
+        # If soup object is empty:
+        if not self.contents:
+            return
+        current_node = self.contents[0]
+        while current_node is not None:
+            next_node = current_node.next_element
+            yield(current_node)
+            current_node = next_node
+
+
     @classmethod
     @_deprecated(
         replaced_by="nothing (private method, will be removed)", version="4.13.0"
